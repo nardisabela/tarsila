@@ -1,7 +1,5 @@
 # Tarsila - A Modern Web Drawing App
 
-![Tarsila Screenshot](screenshot.png) *(You can add a screenshot later)*
-
 Tarsila is a feature-rich, responsive web-based drawing application that works across all devices. Inspired by professional digital art tools, it provides an intuitive interface with layers, various tools, and export capabilities.
 
 ## Features

@@ -17,6 +17,7 @@ const mobileColorBtn = document.getElementById("mobile-color");
 const mobileBrushBtn = document.getElementById("mobile-brush");
 const mobileEraserBtn = document.getElementById("mobile-eraser");
 const mobileLayersBtn = document.getElementById("mobile-layers");
+const mobileEyedropperBtn = document.getElementById("mobile-eyedropper"); // Add this button in HTML
 
 // App State
 let isDrawing = false;
@@ -42,6 +43,81 @@ function init() {
   createLayer("Background");
   setupEventListeners();
   updateCursor();
+  
+  // Add resize observer with debouncing
+  const resizeObserver = new ResizeObserver(debounce(() => {
+    resizeCanvas();
+    renderCanvas();
+  }));
+  resizeObserver.observe(canvasContainer);
+}
+
+// Eyedropper tool functionality
+function useEyedropper(e) {
+  const { offsetX, offsetY } = getCoordinates(e);
+  
+  // Create a temporary canvas to get the pixel data
+  const tempCanvas = document.createElement('canvas');
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCanvas.width = 1;
+  tempCanvas.height = 1;
+  
+  // Draw the visible layers to get the composite color
+  renderCanvas(); // Ensure main canvas is up to date
+  tempCtx.drawImage(canvas, offsetX, offsetY, 1, 1, 0, 0, 1, 1);
+  
+  // Get the pixel data
+  const pixelData = tempCtx.getImageData(0, 0, 1, 1).data;
+  
+  // Convert to hex
+  const rgbToHex = (r, g, b) => {
+    return "#" + [r, g, b].map(x => {
+      const hex = x.toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
+    }).join("");
+  };
+  
+  const hexColor = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
+  
+  // Update the color picker
+  colorPicker.value = hexColor;
+  
+  // If using mobile, update the color display
+  if (mobileColorBtn) {
+    mobileColorBtn.style.backgroundColor = hexColor;
+  }
+
+  currentTool = "pencil";
+  toolSelect.value = "pencil";
+  updateCursor();
+}
+
+// Modify the startDrawing function to include eyedropper
+function startDrawing(e) {
+  if (currentTool === "eyedropper") {
+    useEyedropper(e);
+    return;
+  }
+  
+  isDrawing = true;
+  const { offsetX, offsetY } = getCoordinates(e);
+  [lastX, lastY] = [offsetX, offsetY];
+  getActiveLayer().ctx.beginPath();
+  getActiveLayer().ctx.moveTo(lastX, lastY);
+}
+
+// Update cursor for eyedropper
+function updateCursor() {
+  if (currentTool === "pencil") {
+    canvas.className = "pencil-cursor";
+  } else if (currentTool === "eraser") {
+    canvas.className = "eraser-cursor";
+  } else if (currentTool === "eyedropper") {
+    canvas.className = "eyedropper-cursor";
+  } else {
+    canvas.className = "";
+  }
+}
   
   // Add resize observer with debouncing
   const resizeObserver = new ResizeObserver(debounce(() => {
@@ -300,6 +376,21 @@ function setupEventListeners() {
       : "var(--primary)";
     updateCursor();
   });
+
+    // Add eyedropper to tool selection
+  toolSelect.addEventListener("change", (e) => {
+    currentTool = e.target.value;
+    updateCursor();
+  });
+
+  // Mobile eyedropper button
+  if (mobileEyedropperBtn) {
+    mobileEyedropperBtn.addEventListener("click", () => {
+      currentTool = "eyedropper";
+      toolSelect.value = "eyedropper";
+      updateCursor();
+    });
+  }
   
   addLayerBtn.addEventListener("click", () => createLayer());
   

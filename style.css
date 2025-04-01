@@ -450,6 +450,7 @@ footer {
   transform: rotate(30deg) translate(10%, 10%);
 }
 
+/* Updated zoom controls for better mobile responsiveness */
 .header-controls {
   display: flex;
   align-items: center;
@@ -459,10 +460,61 @@ footer {
 .zoom-controls {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px; /* Reduced gap for mobile */
+  flex-wrap: nowrap; /* Prevent wrapping */
 }
 
 #zoom-level {
-  min-width: 50px;
+  min-width: 40px; /* Reduced width for mobile */
   text-align: center;
+  font-size: 0.9rem; /* Slightly smaller font */
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .header-controls {
+    gap: 6px; /* Smaller gap on mobile */
+  }
+  
+  .zoom-controls {
+    gap: 2px; /* Minimal gap on mobile */
+  }
+  
+  #zoom-level {
+    min-width: 36px; /* Even more compact on mobile */
+    font-size: 0.8rem;
+  }
+  
+  /* Make buttons more compact */
+  .zoom-controls .btn {
+    padding: 4px 8px;
+    min-width: 30px;
+  }
+  
+  /* Hide text labels on small screens */
+  .desktop-only {
+    display: none;
+  }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+  .zoom-controls {
+    gap: 1px;
+  }
+  
+  #zoom-level {
+    min-width: 32px;
+    font-size: 0.75rem;
+  }
+  
+  .zoom-controls .btn {
+    padding: 3px 6px;
+  }
+  
+  /* Stack controls vertically if needed */
+  .header-controls {
+    flex-direction: column;
+    align-items: flex-end;
+  }
 }

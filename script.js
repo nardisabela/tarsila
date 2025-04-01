@@ -1,6 +1,7 @@
 // DOM Elements
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+const canvasContainer = canvas.parentElement;
 const toolSelect = document.getElementById("tool-select");
 const colorPicker = document.getElementById("color");
 const opacitySlider = document.getElementById("opacity");
@@ -26,12 +27,28 @@ let currentTool = "pencil";
 let layers = [];
 let activeLayerIndex = 0;
 
+// Debounce function for resize events
+function debounce(func, timeout = 100) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
+
 // Initialize the app
 function init() {
   resizeCanvas();
   createLayer("Background");
   setupEventListeners();
   updateCursor();
+  
+  // Add resize observer with debouncing
+  const resizeObserver = new ResizeObserver(debounce(() => {
+    resizeCanvas();
+    renderCanvas();
+  }));
+  resizeObserver.observe(canvasContainer);
 }
 
 // Create a new layer
@@ -199,22 +216,49 @@ function updateCursor() {
 // Resize canvas to fit container
 function resizeCanvas() {
   const container = canvas.parentElement;
-  canvas.width = container.clientWidth;
-  canvas.height = container.clientHeight;
+  const oldWidth = canvas.width;
+  const oldHeight = canvas.height;
+  const newWidth = container.clientWidth;
+  const newHeight = container.clientHeight;
+  
+  if (oldWidth === newWidth && oldHeight === newHeight) return;
+  
+  canvas.width = newWidth;
+  canvas.height = newHeight;
   
   if (layers.length > 0) {
     layers.forEach(layer => {
-      layer.canvas.width = canvas.width;
-      layer.canvas.height = canvas.height;
+      // Create a temporary canvas to preserve content
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCanvas.width = oldWidth;
+      tempCanvas.height = oldHeight;
+      tempCtx.drawImage(layer.canvas, 0, 0);
+      
+      // Resize the layer canvas
+      layer.canvas.width = newWidth;
+      layer.canvas.height = newHeight;
+      
+      // Redraw the content scaled to new size
+      layer.ctx.drawImage(tempCanvas, 0, 0, oldWidth, oldHeight, 0, 0, newWidth, newHeight);
     });
     renderCanvas();
   }
 }
 
+// Handle device orientation changes
+function handleOrientationChange() {
+  setTimeout(() => {
+    resizeCanvas();
+    renderCanvas();
+  }, 100);
+}
+
 // Setup event listeners
 function setupEventListeners() {
   // Window events
-  window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("resize", debounce(resizeCanvas));
+  window.addEventListener("orientationchange", handleOrientationChange);
   
   // Canvas events
   canvas.addEventListener("mousedown", startDrawing);
@@ -223,8 +267,18 @@ function setupEventListeners() {
   canvas.addEventListener("mouseout", stopDrawing);
   
   // Touch events
-  canvas.addEventListener("touchstart", startDrawing);
-  canvas.addEventListener("touchmove", draw);
+  canvas.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    startDrawing(e);
+  }, { passive: false });
+  
+  canvas.addEventListener("touchmove", (e) => {
+    if (isDrawing) {
+      e.preventDefault();
+      draw(e);
+    }
+  }, { passive: false });
+  
   canvas.addEventListener("touchend", stopDrawing);
   
   // Tool events

@@ -65,32 +65,6 @@ function rgbToHex(r, g, b) {
     }).join("");
 }
 
-// Image Upload Functionality
-function setupImageUpload() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.style.display = 'none';
-    document.body.appendChild(fileInput);
-
-    uploadBtn.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const img = new Image();
-            img.onload = () => {
-                createLayerFromImage(img, file.name.replace(/\.[^/.]+$/, ""));
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
 function createLayer(name) {
     const layerCanvas = document.createElement("canvas");
     layerCanvas.width = canvas.width;
@@ -172,6 +146,82 @@ function createLayer(name) {
     renderLayersList();
     renderCanvas();
     return layer; // Return the created layer
+}
+
+// Image Upload Functionality
+function setupImageUpload() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+
+    uploadBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                createLayerFromImage(img, file.name.replace(/\.[^/.]+$/, ""));
+            };
+            img.onerror = () => {
+                console.error("Failed to load image");
+                alert("Error loading image. Please try another file.");
+            };
+            img.src = event.target.result;
+        };
+        reader.onerror = () => {
+            console.error("File reading error");
+            alert("Error reading file. Please try another image.");
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function createLayerFromImage(img, name) {
+    const layerCanvas = document.createElement("canvas");
+    layerCanvas.width = canvas.width;
+    layerCanvas.height = canvas.height;
+    const layerCtx = layerCanvas.getContext("2d");  // Fixed this line
+    
+    // Clear canvas first
+    layerCtx.clearRect(0, 0, layerCanvas.width, layerCanvas.height);
+    
+    // Calculate dimensions to maintain aspect ratio
+    const ratio = Math.min(
+        canvas.width / img.width,
+        canvas.height / img.height
+    );
+    const width = img.width * ratio;
+    const height = img.height * ratio;
+    const x = (canvas.width - width) / 2;
+    const y = (canvas.height - height) / 2;
+
+    // Draw the image
+    layerCtx.drawImage(img, x, y, width, height);
+
+    const layer = {
+        name: name || `Image Layer ${state.layers.length + 1}`,
+        canvas: layerCanvas,
+        ctx: layerCtx,
+        visible: true,
+        opacity: 100,
+        x: 0,  // Position on main canvas
+        y: 0,  // Position on main canvas
+        isDraggable: true
+    };
+
+    state.layers.push(layer);
+    state.activeLayerIndex = state.layers.length - 1;
+    renderLayersList();
+    renderCanvas();
+    
+    console.log("Created new layer with image:", layer); // Debug log
+    return layer;
 }
 
 

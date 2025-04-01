@@ -362,3 +362,7 @@ select.btn {
     transform: none;
   }
 }
+
+.eyedropper-cursor {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="%23000000" d="M4 1h16v2h-16v-2zm0 3h16v2h-16v-2zm0 3h10v2h-10v-2zm10.17 4.72l2.83-2.83 1.41 1.41-2.83 2.83zm-10.17 1.28h2v6h-2v-6zm12 0h6v2h-6v-2zm-6.34 2.72l-1.41 1.41-2.83-2.83 1.41-1.41z"/></svg>') 0 16, auto;
+}

@@ -754,6 +754,16 @@ function setupEventListeners() {
       }
       if (state.currentTool === "pencil") updateCursor();
   });
+
+  canvas.addEventListener("mouseup", () => {
+        stopDrawing();
+        stopPan();
+    });
+
+  canvas.addEventListener("mouseout", () => {
+        stopDrawing();
+        stopPan();
+    });
   
   lineWidth.addEventListener("input", updateCursor);
   

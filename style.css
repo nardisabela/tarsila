@@ -44,13 +44,14 @@ header {
 }
 
 .logo {
-  font-family: 'Comic Neue', cursive;
+  font-family: 'Quicksand', sans-serif;
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  letter-spacing: 0.5px; 
 }
 
 .logo i {
@@ -447,4 +448,21 @@ footer {
 
 .btn:hover::after {
   transform: rotate(30deg) translate(10%, 10%);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+#zoom-level {
+  min-width: 50px;
+  text-align: center;
 }

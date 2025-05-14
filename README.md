@@ -39,7 +39,3 @@ Tarsila is a feature-rich, responsive web-based drawing application that works a
 ## Installation
 
 No installation required! Tarsila runs directly in your browser:
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/your-username/tarsila-drawing-app.git
